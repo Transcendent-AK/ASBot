@@ -145,7 +145,7 @@ env.bak/
 venv.bak/
 
 # Google Sheets
-google_service_account.json
+service_account.json
 
 # Spyder project settings
 .spyderproject
