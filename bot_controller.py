@@ -1,3 +1,5 @@
+import commands.sheet
+import commands.ping
 import discord
 import os
 from dotenv import load_dotenv
@@ -11,13 +13,12 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 print("Loading commands...")
-import commands.ping
 commands.ping.setup(bot)
 print("✅ Loaded ping commands")
 
-import commands.sheet
 commands.sheet.setup(bot)
 print("✅ Loaded sheet commands")
+
 
 @bot.event
 async def on_ready():
@@ -27,7 +28,7 @@ async def on_ready():
     """
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print(f'Using Spreadsheet ID: {SPREADSHEET_ID}')
-        
+
     if bot.guilds:
         print(f"Bot is in {len(bot.guilds)} guild(s):")
         for guild in bot.guilds:
@@ -38,6 +39,7 @@ async def on_ready():
     else:
         print("❌ Bot is not in any guilds!")
 
+
 @bot.event
 async def on_command_error(ctx, error):
     """
@@ -45,6 +47,7 @@ async def on_command_error(ctx, error):
     Logs command errors to console.
     """
     print(f"Command error: {error}")
+
 
 @bot.event
 async def on_app_command_error(interaction, error):
