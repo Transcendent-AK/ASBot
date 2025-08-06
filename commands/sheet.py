@@ -67,6 +67,7 @@ class AddPlayerModal(discord.ui.Modal, title="Add Player to Masterlist"):
         Args:
             interaction: The Discord interaction object
         """
+        await interaction.response.defer(ephemeral=True)
         try:
             if self.join_date.value.lower() != 'n/a':
                 date_pattern = r'^\d{1,2}/\d{1,2}/\d{4}$'
@@ -94,24 +95,25 @@ class AddPlayerModal(discord.ui.Modal, title="Add Player to Masterlist"):
             ]
             
             success, message = add_player_to_guild(row_data, interaction.user.name)
-            await interaction.response.send_message(message, ephemeral=True)
+            await interaction.followup.send(message, ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
 
 class RemovePlayerModal(discord.ui.Modal, title="Remove Player from Masterlist"):
     player_id = discord.ui.TextInput(
-        label="Player ID to Remove",
-        placeholder="Enter the player ID to remove",
+        label="Player IGN to Remove",
+        placeholder="Enter the player IGN to remove from the Masterlist",
         required=True,
         max_length=50
     )
 
     async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         try:
             success, message = remove_player_from_guild(self.player_id.value, interaction.user.name)
-            await interaction.response.send_message(message, ephemeral=True)
+            await interaction.followup.send(message, ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
 
 class EditPlayerModal(discord.ui.Modal, title="Edit Player in Masterlist - Step 1"):
     player_ign = discord.ui.TextInput(
@@ -153,56 +155,72 @@ class EditPlayerModal(discord.ui.Modal, title="Edit Player in Masterlist - Step 
                 "known_alts": self.known_alts.value or "",
                 "house": self.house.value or "",
                 "notes": self.notes.value or "",
-                # Action By is already in the store from the select
             }
-            await interaction.response.send_modal(EditPlayerModalStep2())
+            await interaction.response.send_message(
+            "✅ Step 1 complete! Click below to continue to Step 2.",
+            view=ContinueToStep2EditView(),
+            ephemeral=True
+        )
         except Exception as e:
             await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
 
-class EditPlayerModalStep2(discord.ui.Modal, title="Edit Player in Masterlist - Step 2"):
-    sus_alert = discord.ui.TextInput(
-        label="Suspicious Alert (Optional)",
-        placeholder="Enter 'Yes' or 'No' for suspicious alert - Leave empty for No",
-        required=False,
-        max_length=3
-    )
+class EditPlayerModalStep2(discord.ui.Modal):
+    def __init__(self, player_ign, rank, status, discord_id, known_alts):
+        super().__init__(title="Edit Player in Masterlist - Step 2")
+
+        # Save values for later use in on_submit
+        self.player_ign = player_ign
+        self.rank = rank
+        self.status = status
+        self.discord_id = discord_id
+        self.known_alts = known_alts
+
+        # Define and add the input field
+        self.sus_alert = discord.ui.TextInput(
+            label="Suspicious Alert (Optional)",
+            placeholder="Enter 'Yes' or 'No' for suspicious alert - Leave empty for No",
+            required=False,
+            max_length=3
+        )
+
+        self.add_item(self.sus_alert)
 
     async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         try:
+            # Optional: Add more data from previously stored modal
             data = multi_modal_store.pop(interaction.user.id, {})
             action_by_value = data.get('action_by', '')
             sus_alert_value = self.sus_alert.value.strip().lower() if self.sus_alert.value else "no"
+
             if sus_alert_value not in ['yes', 'no']:
-                await interaction.response.send_message("❌ Suspicious Alert must be 'Yes' or 'No' (or leave empty for No)", ephemeral=True)
+                await interaction.followup.send("❌ Suspicious Alert must be 'Yes' or 'No'", ephemeral=True)
                 return
+
             sus_alert_boolean = sus_alert_value == "yes"
-            # Fetch the current row for the player
-            current_row = find_player(data.get("player_ign", ""))
+            current_row = find_player(self.player_ign)
             if not current_row:
-                await interaction.response.send_message("❌ Player not found in Masterlist.", ephemeral=True)
+                await interaction.followup.send("❌ Player not found in Masterlist.", ephemeral=True)
                 return
-            # Merge edited fields into the current row
-            # Assuming columns: IGN, Join Date, Rank, Status, Known Alts, House, Discord ID, Notes, Suspicious Alert, Action By
+
+            # Final row data
             row_data = [
-                data.get("player_ign", current_row[0]),
-                current_row[1],  # Join Date (not edited)
-                current_row[2],  # Rank (not edited)
-                current_row[3],  # Status (not edited)
-                data.get("known_alts", current_row[4]),
+                self.player_ign,
+                current_row[1],  # Join Date
+                current_row[2],  # Rank
+                current_row[3],  # Status
+                self.known_alts or current_row[4],
                 data.get("house", current_row[5]),
-                data.get("discord_id", current_row[6]),
+                self.discord_id or current_row[6],
                 data.get("notes", current_row[7]),
                 sus_alert_boolean,
-                action_by_value
             ]
-            success, message = edit_player_in_guild(data.get("player_ign", ""), row_data, action_by_value)
-            await interaction.response.send_message(message, ephemeral=True)
-            log_update(action_by_value, f"Edited player in Masterlist: {data.get('player_ign', '')}")
+
+            success, message = edit_player_in_guild(self.player_ign, row_data, action_by_value)
+            await interaction.followup.send(message, ephemeral=True)
+
         except Exception as e:
-            try:
-                await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
-            except Exception:
-                await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
 
 class AddToWatchlistModal(discord.ui.Modal, title="Add Player to Watchlist"):
     player_ign = discord.ui.TextInput(
@@ -274,6 +292,7 @@ class AddToWatchlistModal(discord.ui.Modal, title="Add Player to Watchlist"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         try:
             # Validate date format
             date_pattern = r'^\d{1,2}/\d{1,2}/\d{4}$'
@@ -296,9 +315,9 @@ class AddToWatchlistModal(discord.ui.Modal, title="Add Player to Watchlist"):
             ]
             
             success, message = add_player_to_banlist(row_data, interaction.user.name)
-            await interaction.response.send_message(message, ephemeral=True)
+            await interaction.followup.send(message, ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
 
 class CustomEditDateModal(discord.ui.Modal, title="Enter Custom Date"):
     custom_date = discord.ui.TextInput(
@@ -399,7 +418,7 @@ class AddPlayerModalWithDate(discord.ui.Modal, title="Add Player to Masterlist -
                 "selected_rank": self.selected_rank,
             }
             await interaction.response.send_message(
-                "Click below to continue.",
+                "Click below to continue..",
                 view=ContinueToStep2View(),
                 ephemeral=True
             )
@@ -427,11 +446,12 @@ class AddPlayerModalStep2(discord.ui.Modal, title="Add Player to Masterlist - St
     )
 
     async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         try:
             data = multi_modal_store.pop(interaction.user.id, {})
             sus_alert_value = self.sus_alert.value.strip().lower() if self.sus_alert.value else "no"
             if sus_alert_value not in ['yes', 'no']:
-                await interaction.response.send_message("❌ Suspicious Alert must be 'Yes' or 'No' (or leave empty for No)", ephemeral=True)
+                await interaction.followup.send("❌ Suspicious Alert must be 'Yes' or 'No' (or leave empty for No)", ephemeral=True)
                 return
             sus_alert_boolean = sus_alert_value == "yes"
             row_data = [
@@ -446,7 +466,7 @@ class AddPlayerModalStep2(discord.ui.Modal, title="Add Player to Masterlist - St
                 sus_alert_boolean
             ]
             success, message = add_player_to_guild(row_data, interaction.user.name)
-            await interaction.response.send_message(message, ephemeral=True)
+            await interaction.followup.send(message, ephemeral=True)
         except Exception as e:
             try:
                 await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
@@ -904,10 +924,7 @@ class ContinueToStep2WatchlistView(discord.ui.View):
         await interaction.response.send_modal(
             AddToWatchlistModalStep2(
                 data.get("selected_status", ""),
-                data.get("selected_reason", ""),
-                data.get("selected_action_by", ""),
-                data.get("player_ign", ""),
-                data.get("guild", ""),
+                data.get("selected_reason", ""), data.get("selected_action_by", ""), data.get("player_ign", ""), data.get("guild", ""),
                 data.get("status_date", ""),
                 data.get("other_notes", ""),
                 data.get("screenshots", "")
@@ -919,7 +936,7 @@ def setup(bot):
     async def create_sheet_menu(interaction: discord.Interaction):
         embed = discord.Embed(
             title="📊 Sheet Management System",
-            description="Click the buttons below to manage players in the Google Sheet",
+            description="Click the buttons below to manage players in the Guild Google Sheet",
             color=0x00ff00
         )
         embed.add_field(name="🎯 Masterlist", value="Add, remove, or edit players in the guild list", inline=False)
