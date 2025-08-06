@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from .google_sheet import get_sheet
 
 def log_update(user_name, change_description):
