@@ -222,103 +222,103 @@ class EditPlayerModalStep2(discord.ui.Modal):
         except Exception as e:
             await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
 
-class AddToWatchlistModal(discord.ui.Modal, title="Add Player to Watchlist"):
-    player_ign = discord.ui.TextInput(
-        label="IGN (In-Game Name)",
-        placeholder="Enter the player's in-game name (e.g., John Doe)",
-        required=True,
-        max_length=50
-    )
-    status = discord.ui.TextInput(
-        label="Status",
-        placeholder="Enter status (e.g., General Ban, Warning, Active)",
-        required=True,
-        max_length=50
-    )
-    guild = discord.ui.TextInput(
-        label="Guild",
-        placeholder="Enter guild name (e.g., Puffles)",
-        required=True,
-        max_length=50
-    )
-    status_date = discord.ui.TextInput(
-        label="Status Date",
-        placeholder="Enter status date (e.g., MM/DD/YYYY)",
-        required=True,
-        max_length=10
-    )
-    reason = discord.ui.TextInput(
-        label="Reason for Status",
-        placeholder="Enter reason (e.g., ST - Leeching, Harassment)",
-        required=True,
-        max_length=100
-    )
-    action_by = discord.ui.TextInput(
-        label="Action By",
-        placeholder="Enter who took the action (e.g., Admin, Moderator)",
-        required=True,
-        max_length=50
-    )
-    other_notes = discord.ui.TextInput(
-        label="Other Notes",
-        placeholder="Enter additional notes",
-        required=False,
-        max_length=500,
-        style=discord.TextStyle.paragraph
-    )
-    screenshots = discord.ui.TextInput(
-        label="Screenshots",
-        placeholder="Enter screenshot URL (e.g., https://discord.com/channels/...)",
-        required=False,
-        max_length=200
-    )
-    known_alts = discord.ui.TextInput(
-        label="Known Alts",
-        placeholder="Enter known alternate accounts (separate with commas)",
-        required=False,
-        max_length=200
-    )
-    discord_id = discord.ui.TextInput(
-        label="Discord ID",
-        placeholder="Enter Discord ID (e.g., 551475914809786890)",
-        required=False,
-        max_length=20
-    )
-    house_name = discord.ui.TextInput(
-        label="House Name",
-        placeholder="Enter house name",
-        required=False,
-        max_length=50
-    )
-
-    async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        try:
-            # Validate date format
-            date_pattern = r'^\d{1,2}/\d{1,2}/\d{4}$'
-            if not re.match(date_pattern, self.status_date.value):
-                await interaction.response.send_message("❌ Invalid date format. Please use MM/DD/YYYY", ephemeral=True)
-                return
-            
-            row_data = [
-                self.player_ign.value,
-                self.status.value,
-                self.guild.value,
-                self.status_date.value,
-                self.reason.value,
-                self.action_by.value,
-                self.other_notes.value or "",
-                self.screenshots.value or "",
-                self.known_alts.value or "",
-                self.discord_id.value or "",
-                self.house_name.value or ""
-            ]
-            
-            success, message = add_player_to_banlist(row_data, interaction.user.name)
-            await interaction.followup.send(message, ephemeral=True)
-        except Exception as e:
-            await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
-
+# class AddToWatchlistModal(discord.ui.Modal, title="Add Player to Watchlist"):
+#     player_ign = discord.ui.TextInput(
+#         label="IGN (In-Game Name)",
+#         placeholder="Enter the player's in-game name (e.g., John Doe)",
+#         required=True,
+#         max_length=50
+#     )
+#     status = discord.ui.TextInput(
+#         label="Status",
+#         placeholder="Enter status (e.g., General Ban, Warning, Active)",
+#         required=True,
+#         max_length=50
+#     )
+#     guild = discord.ui.TextInput(
+#         label="Guild",
+#         placeholder="Enter guild name (e.g., Puffles)",
+#         required=True,
+#         max_length=50
+#     )
+#     status_date = discord.ui.TextInput(
+#         label="Status Date",
+#         placeholder="Enter status date (e.g., MM/DD/YYYY)",
+#         required=True,
+#         max_length=10
+#     )
+#     reason = discord.ui.TextInput(
+#         label="Reason for Status",
+#         placeholder="Enter reason (e.g., ST - Leeching, Harassment)",
+#         required=True,
+#         max_length=100
+#     )
+#     action_by = discord.ui.TextInput(
+#         label="Action By",
+#         placeholder="Enter who took the action (e.g., Admin, Moderator)",
+#         required=True,
+#         max_length=50
+#     )
+#     other_notes = discord.ui.TextInput(
+#         label="Other Notes",
+#         placeholder="Enter additional notes",
+#         required=False,
+#         max_length=500,
+#         style=discord.TextStyle.paragraph
+#     )
+#     screenshots = discord.ui.TextInput(
+#         label="Screenshots",
+#         placeholder="Enter screenshot URL (e.g., https://discord.com/channels/...)",
+#         required=False,
+#         max_length=200
+#     )
+#     known_alts = discord.ui.TextInput(
+#         label="Known Alts",
+#         placeholder="Enter known alternate accounts (separate with commas)",
+#         required=False,
+#         max_length=200
+#     )
+#     discord_id = discord.ui.TextInput(
+#         label="Discord ID",
+#         placeholder="Enter Discord ID (e.g., 551475914809786890)",
+#         required=False,
+#         max_length=20
+#     )
+#     house_name = discord.ui.TextInput(
+#         label="House Name",
+#         placeholder="Enter house name",
+#         required=False,
+#         max_length=50
+#     )
+#
+#     async def on_submit(self, interaction: discord.Interaction):
+#         await interaction.response.defer(ephemeral=True)
+#         try:
+#             # Validate date format
+#             date_pattern = r'^\d{1,2}/\d{1,2}/\d{4}$'
+#             if not re.match(date_pattern, self.status_date.value):
+#                 await interaction.response.send_message("❌ Invalid date format. Please use MM/DD/YYYY", ephemeral=True)
+#                 return
+#
+#             row_data = [
+#                 self.player_ign.value,
+#                 self.status.value,
+#                 self.guild.value,
+#                 self.status_date.value,
+#                 self.reason.value,
+#                 self.action_by.value,
+#                 self.other_notes.value or "",
+#                 self.screenshots.value or "",
+#                 self.known_alts.value or "",
+#                 self.discord_id.value or "",
+#                 self.house_name.value or ""
+#             ]
+#
+#             success, message = add_player_to_banlist(row_data, interaction.user.name)
+#             await interaction.followup.send(message, ephemeral=True)
+#         except Exception as e:
+#             await interaction.followup.send(f"❌ Error: {str(e)}", ephemeral=True)
+#
 class CustomEditDateModal(discord.ui.Modal, title="Enter Custom Date"):
     custom_date = discord.ui.TextInput(
         label="Custom Date",
@@ -782,19 +782,19 @@ class PersistentActionView(discord.ui.View):
         except Exception as e:
             await interaction.followup.send(f"❌ Error opening modal: {str(e)}", ephemeral=True)
 
-    @discord.ui.button(label="Add to Watchlist", style=discord.ButtonStyle.red, custom_id="persistent_watchlist_add")
-    async def watchlist_add_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        try:
-            # Create a view with the select menu
-            view = discord.ui.View()
-            view.add_item(WatchlistStatusSelect())
-            await interaction.response.send_message(
-                "Select player status:",
-                view=view,
-                ephemeral=True
-            )
-        except Exception as e:
-            await interaction.followup.send(f"❌ Error opening select menu: {str(e)}", ephemeral=True)
+    # @discord.ui.button(label="Add to Watchlist", style=discord.ButtonStyle.red, custom_id="persistent_watchlist_add")
+    # async def watchlist_add_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     try:
+    #         # Create a view with the select menu
+    #         view = discord.ui.View()
+    #         view.add_item(WatchlistStatusSelect())
+    #         await interaction.response.send_message(
+    #             "Select player status:",
+    #             view=view,
+    #             ephemeral=True
+    #         )
+    #     except Exception as e:
+    #         await interaction.followup.send(f"❌ Error opening select menu: {str(e)}", ephemeral=True)
 
 class DateSelect(discord.ui.Select):
     def __init__(self, selected_status: str):
@@ -940,8 +940,8 @@ def setup(bot):
             color=0x00ff00
         )
         embed.add_field(name="🎯 Masterlist", value="Add, remove, or edit players in the guild list", inline=False)
-        embed.add_field(name="⚠️ Watchlist", value="Manage banned or watched players", inline=False)
-        embed.set_footer(text="All actions are logged automatically")
+        # embed.add_field(name="⚠️ Watchlist", value="Manage banned or watched players", inline=False)
+        embed.set_footer(text="All actions are logged automatically on the sheet")
 
         await interaction.response.send_message("✅ Sheet management menu created!", ephemeral=True)
         await interaction.followup.send(
