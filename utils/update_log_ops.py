@@ -40,7 +40,7 @@ def log_update(user_name, change_description):
         user_name = 'Kyzey'
 
     if user_name == 'voyagerloaf':
-        user_name = 'lLof'
+        user_name = 'Lof'
 
     sheet = get_sheet('Update Sheet')
     date_str = datetime.now().strftime('%Y/%m/%d')
