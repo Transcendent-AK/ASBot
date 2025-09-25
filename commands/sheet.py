@@ -670,6 +670,7 @@ class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - 
         max_length=50
     )
 
+    #TODO: No clue why, but this is not sending the screenshot link to the sheet
     screenshot = discord.ui.TextInput(
         label="Screenshot URL",
         placeholder="Enter the Discord Message URL(e.g.,https://cdn.discordapp.com/attachments/...)",
@@ -683,15 +684,16 @@ class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - 
             data = multi_modal_store.pop(interaction.user.id, {})
             row_data = [
                 data.get("player_ign", ""),
-                data.get("selected_date", ""),
-                data.get("selected_rank", ""),
                 data.get("selected_status", ""),
-                data.get("known_alts", ""),
-                data.get("house", ""),
-                data.get("discord_id", ""),
-                data.get("notes", ""),
+                data.get("guild", ""),
+                data.get("selected_date", ""),
                 data.get("selected_reason", ""),
+                data.get("action_by", ""),
+                data.get("notes", ""),
                 data.get("screenshot", ""),
+                data.get("known_alts", ""),
+                data.get("discord_id", ""),
+                data.get("house", ""),
             ]
             success, message = add_player_to_banlist(row_data, interaction.user.name)
             await interaction.followup.send(message, ephemeral=True)

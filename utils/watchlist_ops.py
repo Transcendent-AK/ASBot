@@ -1,16 +1,7 @@
 from .google_sheet import get_sheet
 from .update_log_ops import log_update
 
-def get_action_by_list():
-    """
-    Gets the list of Action By users from the sheet dropdown options.
-    
-    Returns:
-        list: Predefined Action By options from the Google Sheet dropdown
-    """
-    return ["Lof", "Beaako", "Gds", "Kahz", "Kitsu", "Kyzey", "Nyx", "Skar", "Exdel", "Luna", "Bogi"]
-
-def add_player_to_banlist(row_data, user_name):
+def add_player_to_banlist(player_id, user_name):
     """
     Adds a player to the Watchlist sheet.
     
@@ -23,9 +14,10 @@ def add_player_to_banlist(row_data, user_name):
     """
     try:
         sheet = get_sheet('Watchlist')
-        sheet.append_row(row_data)
-        log_update(user_name, f"Added player to Watchlist: {row_data}")
-        return True, f"✅ Successfully added player to Watchlist!"
+        cell = sheet.find(player_id)
+        sheet.append_row(cell.row) #TODO: add the name of the admin that added the player on the action by
+        log_update(user_name, f"Added player to Watchlist: {player_id}")
+        return True, f"✅ Successfully added player {player_id} to Watchlist!"
     except Exception as e:
         return False, f"❌ Failed to add player to Watchlist: {str(e)}"
 
