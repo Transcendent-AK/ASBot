@@ -661,7 +661,6 @@ class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - 
         self.known_alts = known_alts
         self.house = house
         self.notes = notes
-        self.screenshot = screenshot
 
     guild = discord.ui.TextInput(
         label="Guild",
@@ -670,7 +669,6 @@ class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - 
         max_length=50
     )
 
-    #TODO: No clue why, but this is not sending the screenshot link to the sheet
     screenshot = discord.ui.TextInput(
         label="Screenshot URL",
         placeholder="Enter the Discord Message URL(e.g.,https://cdn.discordapp.com/attachments/...)",
@@ -685,12 +683,12 @@ class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - 
             row_data = [
                 data.get("player_ign", ""),
                 data.get("selected_status", ""),
-                data.get("guild", ""),
+                self.guild.value,
                 data.get("selected_date", ""),
                 data.get("selected_reason", ""),
                 data.get("action_by", ""),
                 data.get("notes", ""),
-                data.get("screenshot", ""),
+                self.screenshot.value,
                 data.get("known_alts", ""),
                 data.get("discord_id", ""),
                 data.get("house", ""),
