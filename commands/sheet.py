@@ -529,11 +529,11 @@ class ContinueToStep2EditView(discord.ui.View):
         )
 
 class Watchlist(discord.ui.Modal, title="Add player to Watchlist"):
-    def __init__(self, selected_date: str, selected_status: str):
+    def __init__(self, selected_date: str, selected_status: str, selected_reason: str):
         super().__init__()
         self.selected_date = selected_date
         self.selected_status= selected_status
-        # self.selected_reason= selected_reason
+        self.selected_reason= selected_reason
 
     player_ign = discord.ui.TextInput(
         label="IGN (In-Game Name)",
@@ -576,6 +576,7 @@ class Watchlist(discord.ui.Modal, title="Add player to Watchlist"):
                 "notes": self.notes.value or "",
                 "selected_date": self.selected_date,
                 "selected_status": self.selected_status,
+                "selected_reason": self.selected_reason,
             }
             await interaction.response.send_message(
                 "Click below to continue..",
@@ -602,7 +603,39 @@ class BanStatus(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         view = discord.ui.View()
-        view.add_item(WatchlistDateSelect(self.values[0]))
+        view.add_item(StatusReason(self.values[0]))
+
+        await interaction.response.edit_message(
+            content="Select reason for ban:",
+            view=view
+        )
+        
+class StatusReason(discord.ui.Select):
+    def __init__(self, selected_status: str):
+        self.selected_status= selected_status
+        super().__init__(
+            placeholder="Select the reason for the ban.",
+            min_values=1,
+            max_values=1,
+            options=[
+                discord.SelectOption(label="(ST) Leeching", value="ST - Leeching"),
+                discord.SelectOption(label="(ST) Not Following Instructions", value="ST - Not Following Instructions"),
+                discord.SelectOption(label="(ST) Not Responding to Warnings", value="ST - Not Responding to Warnings"),
+                discord.SelectOption(label="(ST) Banned in other raids", value="ST - Banned in other raids"),
+                discord.SelectOption(label="Making Trouble", value="Making Trouble"),
+                discord.SelectOption(label="Suspicious Person", value="Suspicious Person"),
+                discord.SelectOption(label="Scammer", value="Scammer"),
+                discord.SelectOption(label="Big Drama Llama", value="Big Drama Llama"),
+                discord.SelectOption(label="Griefing", value="Griefing"),
+                discord.SelectOption(label="VOE Issue", value="VOE Issue"),
+                discord.SelectOption(label="Kyzey's Shit List", value="Kyzey's Shit List"),
+            ]
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        selected_reason = self.values[0]
+        view = discord.ui.View()
+        view.add_item(WatchlistDateSelect(self.selected_status, selected_reason))
 
         await interaction.response.edit_message(
             content="Select punishment date:",
@@ -610,8 +643,9 @@ class BanStatus(discord.ui.Select):
         )
 
 class WatchlistDateSelect(discord.ui.Select):
-    def __init__(self, selected_status: str):
+    def __init__(self, selected_status: str, selected_reason: str):
         self.selected_status= selected_status
+        self.selected_reason= selected_reason
         options = []
         current_date = datetime.now()
 
@@ -628,7 +662,7 @@ class WatchlistDateSelect(discord.ui.Select):
         )
     async def callback(self, interaction: discord.Interaction):
         selected_date = self.values[0]
-        await interaction.response.send_modal(Watchlist(selected_date, self.selected_status))
+        await interaction.response.send_modal(Watchlist(selected_date, self.selected_status, self.selected_reason))
 
 class WatchlistContinueView(discord.ui.View):
     @discord.ui.button(label="Continue", style=discord.ButtonStyle.primary)
@@ -638,7 +672,6 @@ class WatchlistContinueView(discord.ui.View):
             AddWatchlistModalStep2(
                 data.get("selected_date", ""),
                 data.get("selected_status", ""),
-                data.get("selected_rank", ""),
                 data.get("player_ign", ""),
                 data.get("discord_id", ""),
                 data.get("known_alts", ""),
@@ -649,13 +682,13 @@ class WatchlistContinueView(discord.ui.View):
         )
 
 class AddWatchlistModalStep2(discord.ui.Modal, title="Add Player to Watchlist - Step 2"):
-    def __init__(self, selected_date: str, selected_status: str, selected_rank: str, 
-                 player_ign: str, discord_id: str, known_alts: str, house: str, notes: str,
-                 screenshot: str):
+    def __init__(self, selected_date: str, selected_status: str, selected_reason: str, 
+                 player_ign: str, discord_id: str, known_alts: str, house: str, notes: str
+                 ):
         super().__init__()
         self.selected_date = selected_date
         self.selected_status = selected_status
-        self.selected_rank = selected_rank
+        self.selected_reason= selected_reason
         self.player_ign = player_ign
         self.discord_id = discord_id
         self.known_alts = known_alts
